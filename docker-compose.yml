@@ -1,0 +1,52 @@
+version: '2'
+services:
+
+  nginx:
+    env_file: .env
+    image: valerianomanassero/httpproxy-centos:1.0
+    mem_limit: 256M
+    memswap_limit: 256M
+    restart: unless-stopped
+    links:
+      - kibana
+    ports:
+      - "1234:1234"
+
+  logstash:
+    image: valerianomanassero/logstash-centos:1.0
+    mem_limit: 1G
+    memswap_limit: 1G
+    restart: unless-stopped
+    volumes:
+      - ./logstash/logstash.conf:/etc/logstash/conf.d/logstash.conf:ro
+    links:
+      - elasticsearch
+    ports:
+      - "5044:5044"
+
+  elasticsearch:
+    image: valerianomanassero/elasticsearch-centos:1.0
+    mem_limit: 4G
+    memswap_limit: 4G
+    restart: unless-stopped
+    volumes:
+      - elasticsearch_data:/var/lib/elasticsearch:rw
+
+  curator:
+    image: valerianomanassero/curator-centos:1.1
+    mem_limit: 512M
+    restart: unless-stopped
+    links:
+      - elasticsearch
+
+  kibana:
+    image: valerianomanassero/kibana-centos:1.1
+    mem_limit: 1G
+    memswap_limit: 1G
+    restart: unless-stopped
+    links:
+      - elasticsearch
+
+volumes:
+  elasticsearch_data:
+    external: false
