@@ -1,3 +1,4 @@
+![Enhanced ELK Stack](https://raw.githubusercontent.com/valeriano-manassero/elk-stack/master/docs/elastic.png)
 # Enhanced ELK stack (Elasticsearch, Logstash, Kibana, X-Pack, Curator)
 
 Run enhanced ELK stack (Elasticsearch, Logstash, Kibana, X-Pack, Curator) on top of Docker Swarm.
