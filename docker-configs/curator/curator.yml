@@ -1,0 +1,9 @@
+client:
+  hosts:
+    - elasticsearch
+  port: 9200
+  use_ssl: False
+  ssl_no_validate: False
+  http_auth: elastic:changeme
+  timeout: 30
+  master_only: False
