@@ -1,52 +1,103 @@
-version: '2'
+version: '3.2'
 services:
-
-  nginx:
-    env_file: .env
-    image: valerianomanassero/httpproxy-centos:1.0
-    mem_limit: 256M
-    memswap_limit: 256M
-    restart: unless-stopped
-    links:
-      - kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.5.1
     ports:
-      - "1234:1234"
-
-  logstash:
-    image: valerianomanassero/logstash-centos:1.0
-    mem_limit: 1G
-    memswap_limit: 1G
-    restart: unless-stopped
+      - "5601:5601"
+    environment:
+      - "ELASTICSEARCH_URL=http://elasticsearch:9200"
+    networks:
+      - elk
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2048M
+      restart_policy:
+        condition: on-failure
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
+    environment:
+      - "cluster.name=docker-cluster"
+      - "network.host=0.0.0.0"
+      - "transport.host=0.0.0.0"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        hard: 65536
+        soft: 65536
+      nproc: 65538
     volumes:
-      - ./logstash/logstash.conf:/etc/logstash/conf.d/logstash.conf:ro
-    links:
-      - elasticsearch
+      - elastic_data:/usr/share/elasticsearch/data/
+    networks:
+      - elk
+    deploy:
+      mode: replicated
+      replicas: 1
+      endpoint_mode: dnsrr
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4096M
+      update_config:
+        parallelism: 1
+        delay: 60s
+      restart_policy:
+        condition: on-failure
+  logstash:
+    image: docker.elastic.co/logstash/logstash:5.5.1
     ports:
       - "5044:5044"
-
-  elasticsearch:
-    image: valerianomanassero/elasticsearch-centos:1.0
-    mem_limit: 4G
-    memswap_limit: 4G
-    restart: unless-stopped
-    volumes:
-      - elasticsearch_data:/var/lib/elasticsearch:rw
-
+    networks:
+      - elk
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1024M
+      update_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+    secrets:
+      - source: logstash_config
+        target: /usr/share/logstash/pipeline/logstash.conf
   curator:
-    image: valerianomanassero/curator-centos:1.1
-    mem_limit: 512M
-    restart: unless-stopped
-    links:
-      - elasticsearch
-
-  kibana:
-    image: valerianomanassero/kibana-centos:1.1
-    mem_limit: 1G
-    memswap_limit: 1G
-    restart: unless-stopped
-    links:
-      - elasticsearch
-
+    image: valerianomanassero/curator-centos:5.1.1
+    networks:
+      - elk
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+    secrets:
+      - source: curator_config
+        target: /root/.curator/curator.yml
+      - source: curator_actions_config
+        target: /root/.curator/actions.yml
+secrets:
+  logstash_config:
+    file: ./docker-configs/logstash/logstash.conf
+  curator_config:
+    file: ./docker-configs/curator/curator.yml
+  curator_actions_config:
+    file: ./docker-configs/curator/actions.yml
 volumes:
-  elasticsearch_data:
-    external: false
+  elastic_data:
+    driver: local
+networks:
+  elk:
+    driver: overlay 
