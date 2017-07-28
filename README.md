@@ -1,4 +1,4 @@
-# ELK stack based on Docker Compose
+# Enhanced ELK stack (Elasticsearch, Logstash, Kibana, X-Pack, Curator)
 
 Run enhanced ELK stack (Elasticsearch, Logstash, Kibana, X-Pack, Curator) on top of Docker Swarm.
 
