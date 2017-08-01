@@ -1,7 +1,7 @@
 ![Enhanced ELK Stack](https://raw.githubusercontent.com/valeriano-manassero/elk-stack/master/docs/elastic.png)
 # Enhanced ELK stack (Elasticsearch, Logstash, Kibana, X-Pack, Curator)
 
-Run enhanced ELK stack (Elasticsearch, Logstash, Kibana, X-Pack, Curator) on top of Docker Swarm.
+Run enhanced ELK stack (Elasticsearch, Logstash, Kibana, X-Pack, Curator, NGINX) on top of Docker Swarm.
 
 It will give you the ability to analyze any data set by using the searching/aggregation capabilities of Elasticsearch
 and the visualization power of Kibana.
@@ -19,6 +19,7 @@ Based on official Elasticsearch Docker images plus custom Curator:
 3. [Initial Setup](#initial-setup) 
    * [How can I tune the Logstash configuration?](#how-can-i-tune-the-logstash-configuration)
    * [How can I tune the Curator configuration?](#how-can-i-tune-the-curator-configuration)
+   * [Why NGINX as a proxy?](#why-nginx-as-a-proxy)
 4. [Storage](#storage)
    * [Where Elasticsearch data is persisted?](#where-elasticsearch-data-is-persisted)
 5. [Scale](#scale)
@@ -47,6 +48,7 @@ Give Kibana about 2 minutes to initialize, then access the Kibana web UI by hitt
 By default, the stack exposes the following ports:
 * 5044: Logstash Beats input.
 * 5601: Kibana with default X-Pack credentials (user: elastic, password: changeme)
+* 9200: Elasticsearch with default X-Pack credentials (user: elastic, password: changeme)
 
 ## Initial setup
 
@@ -61,6 +63,10 @@ The Logstash configuration is stored in `docker-configs/logstash/logstash.yml`.
 The Curator configuration is stored in `docker-configs/curator/curator.yml` and `docker-configs/curator/actions.yml`.
 
 **NOTE**: Curator is configured to purge ant logstash-* index older than 30 days. Probably you'll need to configure these files according yours needs.
+
+### Why NGINX as a proxy?
+
+Since we need DNS Round Robin in Swarm service configuration for Elasticsearch to achieve scaling on unicast messages, Docker can't publish on ingress network (VIP is required). So I put an NGINX in front of Elasticsearch as a proxy.
 
 ## Storage
 
