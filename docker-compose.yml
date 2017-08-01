@@ -49,6 +49,26 @@ services:
         delay: 60s
       restart_policy:
         condition: on-failure
+  es_proxy:
+    image: nginx:latest
+    ports:
+      - "9200:80"
+    networks:
+      - elk
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1024M
+      update_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+    secrets:
+      - source: es_proxy_config
+        target: /etc/nginx/nginx.conf
   logstash:
     image: docker.elastic.co/logstash/logstash:5.5.1
     ports:
@@ -95,6 +115,8 @@ secrets:
     file: ./docker-configs/curator/curator.yml
   curator_actions_config:
     file: ./docker-configs/curator/actions.yml
+  es_proxy_config:
+    file: ./docker-configs/es_proxy/nginx.conf
 volumes:
   elastic_data:
     driver: local
