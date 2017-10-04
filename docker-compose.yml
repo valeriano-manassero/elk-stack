@@ -71,6 +71,8 @@ services:
         target: /etc/nginx/nginx.conf
   logstash:
     image: docker.elastic.co/logstash/logstash:6.0.0-beta2
+    environment:
+      - "LS_JAVA_OPTS=-Xmx2g"
     ports:
       - "5044:5044"
     networks:
@@ -81,7 +83,7 @@ services:
       resources:
         limits:
           cpus: '2'
-          memory: 1024M
+          memory: 4096M
       update_config:
         parallelism: 1
         delay: 5s
