@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   kibana:
-    image: docker.elastic.co/kibana/kibana:6.0.0-beta2
+    image: docker.elastic.co/kibana/kibana:6.0.0
     ports:
       - "5601:5601"
     environment:
@@ -18,7 +18,7 @@ services:
       restart_policy:
         condition: on-failure
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.0.0-beta2
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.0.0
     environment:
       - "cluster.name=docker-cluster"
       - "network.host=0.0.0.0"
@@ -70,7 +70,7 @@ services:
       - source: es_proxy_config
         target: /etc/nginx/nginx.conf
   logstash:
-    image: docker.elastic.co/logstash/logstash:6.0.0-beta2
+    image: docker.elastic.co/logstash/logstash:6.0.0
     environment:
       - "LS_JAVA_OPTS=-Xmx2g"
     ports:
@@ -93,7 +93,7 @@ services:
       - source: logstash_config
         target: /usr/share/logstash/pipeline/logstash.conf
   curator:
-    image: valerianomanassero/curator-centos:5.2.0
+    image: valerianomanassero/curator-centos:5.4.0
     networks:
       - elk
     deploy:
